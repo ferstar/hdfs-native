@@ -373,8 +373,11 @@ impl User {
         }
     }
 
-    pub(crate) fn get_simple_user() -> UserInfo {
-        let effective_user = env::var(HADOOP_USER_NAME).ok().unwrap_or_else(username);
+    pub(crate) fn get_simple_user(override_user: Option<&str>) -> UserInfo {
+        let effective_user = override_user
+            .map(|u| u.to_string())
+            .or_else(|| env::var(HADOOP_USER_NAME).ok())
+            .unwrap_or_else(username);
         UserInfo {
             real_user: None,
             effective_user: Some(effective_user),

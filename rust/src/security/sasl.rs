@@ -71,13 +71,14 @@ pub(crate) async fn negotiate_sasl_session(
     stream: TcpStream,
     service: &str,
     config: &Configuration,
+    user: Option<&str>,
 ) -> Result<(UserInfo, SaslReader, SaslWriter)> {
     let (reader, writer) = stream.into_split();
     let mut reader = SaslReader::new(reader);
     let mut writer = SaslWriter::new(writer);
 
     if !config.security_enabled() {
-        return Ok((User::get_simple_user(), reader, writer));
+        return Ok((User::get_simple_user(user), reader, writer));
     }
 
     let rpc_sasl = RpcSaslProto {
@@ -159,7 +160,7 @@ pub(crate) async fn negotiate_sasl_session(
     let user_info = if let Some(s) = session.as_ref() {
         s.get_user_info()?
     } else {
-        User::get_simple_user()
+        User::get_simple_user(user)
     };
     let session = session
         .filter(|x| {

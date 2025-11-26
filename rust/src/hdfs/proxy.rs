@@ -30,6 +30,7 @@ struct ProxyConnection {
     nameservice: Option<String>,
     config: Arc<Configuration>,
     handle: Handle,
+    user: Option<String>,
 }
 
 impl ProxyConnection {
@@ -39,6 +40,7 @@ impl ProxyConnection {
         nameservice: Option<String>,
         config: Arc<Configuration>,
         handle: Handle,
+        user: Option<String>,
     ) -> Self {
         ProxyConnection {
             url,
@@ -47,6 +49,7 @@ impl ProxyConnection {
             nameservice,
             config,
             handle,
+            user,
         }
     }
 
@@ -63,6 +66,7 @@ impl ProxyConnection {
                             self.nameservice.as_deref(),
                             &self.config,
                             &self.handle,
+                            self.user.as_deref(),
                         )
                         .await?,
                     );
@@ -95,6 +99,7 @@ impl NameServiceProxy {
         nameservice: &Url,
         config: Arc<Configuration>,
         handle: Handle,
+        user: Option<String>,
     ) -> Result<Self> {
         let host = nameservice.host_str().ok_or(HdfsError::InvalidArgument(
             "No host for name service".to_string(),
@@ -131,6 +136,7 @@ impl NameServiceProxy {
                 None,
                 Arc::clone(&config),
                 handle,
+                user,
             )]
         } else {
             // TODO: Add check for no configured namenodes
@@ -144,6 +150,7 @@ impl NameServiceProxy {
                         Some(host.to_string()),
                         Arc::clone(&config),
                         handle.clone(),
+                        user.clone(),
                     )
                 })
                 .collect()

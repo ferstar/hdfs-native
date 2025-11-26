@@ -131,6 +131,7 @@ impl RpcConnection {
         nameservice: Option<&str>,
         config: &Configuration,
         handle: &Handle,
+        user: Option<&str>,
     ) -> Result<Self> {
         let client_id = Uuid::new_v4().to_bytes_le().to_vec();
         let next_call_id = AtomicI32::new(0);
@@ -152,7 +153,8 @@ impl RpcConnection {
         let service = nameservice
             .map(|ns| format!("ha-hdfs:{ns}"))
             .unwrap_or(url.to_string());
-        let (user_info, reader, writer) = negotiate_sasl_session(stream, &service, config).await?;
+        let (user_info, reader, writer) =
+            negotiate_sasl_session(stream, &service, config, user).await?;
         let (sender, receiver) = mpsc::channel::<Vec<u8>>(1000);
 
         let mut conn = RpcConnection {
